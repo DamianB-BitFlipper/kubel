@@ -434,7 +434,6 @@ Used for back-navigation when pressing q.")
   (setq kubel--label-values-cached nil)
   (clrhash kubel--context-namespace-cache))
 
-
 (defun kubel--get-context-default-namespace (&optional context)
   "Get the default namespace for CONTEXT from kubectl config.
 If CONTEXT is nil, uses `kubel-context'.
@@ -1088,11 +1087,11 @@ Otherwise, prompts with completing-read."
     (with-current-buffer (clone-buffer)
       (setq kubel--parent-buffer parent-buffer)
       (let ((selector (completing-read
-                     "Selector: "
-                     (kubel--list-selectors))))
-      (when (equal selector "none")
-        (setq selector ""))
-      (setq kubel-selector selector))
+                       "Selector: "
+                       (kubel--list-selectors))))
+        (when (equal selector "none")
+          (setq selector ""))
+        (setq kubel-selector selector))
       (kubel--add-selector-to-history kubel-selector)
       ;; Update pod list according to the label selector
       (switch-to-buffer (current-buffer))
@@ -1486,14 +1485,13 @@ When called interactively, prompts for a buffer belonging to kubel."
 (transient-define-prefix kubel-help-popup ()
   "Kubel Menu"
   [["Actions"
-    ;; global
     ("RET" "Resource details" kubel-describe-popup)
     ("E" "Quick edit" kubel-quick-edit)
     ("g" "Refresh" kubel-refresh)
     ("b" "Buffers" kubel-switch-to-buffer)
     ("k" "Delete" kubel-delete-popup)
     ("r" "Rollout" kubel-rollout-history)]
-   ["" ;; based on current view
+   ["Pod Actions"
     ("p" "Port forward" kubel-port-forward-pod)
     ("l" "Logs" kubel-log-popup)
     ("e" "Exec" kubel-exec-popup)
@@ -1505,8 +1503,8 @@ When called interactively, prompts for a buffer belonging to kubel."
     ("y" "List namespaces" kubel-list-namespaces)
     ("R" "Set resource" kubel-set-resource)
     ("K" "Set kubectl config file" kubel-set-kubectl-config-file)
-    ("F" "Set output format" kubel-set-output-format)]
-   ["Filter"
+    ("F" "Set output format" kubel-set-output-format)]]
+  [["Filter"
     ("f" "Filter" kubel-set-filter)
     ("M-n" "Next highlight" kubel-jump-to-next-highlight)
     ("M-p" "Previous highlight" kubel-jump-to-previous-highlight)
@@ -1517,7 +1515,7 @@ When called interactively, prompts for a buffer belonging to kubel."
     ("M" "Mark all items" kubel-mark-all)
     ("U" "Unmark all items" kubel-unmark-all)]
    ["Utilities"
-    ("c" "Copy to clipboad..." kubel-copy-popup)
+    ("c" "Copy to clipboard..." kubel-copy-popup)
     ("$" "Show Process buffer" kubel-show-process-buffer)]])
 
 ;; mode map
@@ -1650,6 +1648,21 @@ DIRECTORY is optional for TRAMP support."
   (use-local-map kubel-mode-map)
   (hl-line-mode 1)
   (run-mode-hooks 'kubel-mode-hook))
+
+(defvar kubel-global-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c o K") #'kubel)
+    map)
+  "Keymap for `kubel-global-mode'.")
+
+;;;###autoload
+(define-minor-mode kubel-global-mode
+  "Global minor mode to provide keybindings for kubel.
+
+\\{kubel-global-mode-map}"
+  :global t
+  :group 'kubel
+  :keymap kubel-global-mode-map)
 
 (provide 'kubel)
 ;;; kubel.el ends here
